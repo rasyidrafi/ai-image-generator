@@ -1,35 +1,38 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { ImageIcon, Sparkles } from "lucide-react";
-import { PromptInput } from "@/components/prompt-input";
-import { ImageDisplay } from "@/components/image-display";
+import { useState } from 'react';
+import { ImageIcon, Sparkles } from 'lucide-react';
+import { PromptInput } from '@/components/prompt-input';
+import { ImageDisplay } from '@/components/image-display';
+import { DimensionControls } from '@/components/dimension-controls';
 
 export default function Home() {
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [width, setWidth] = useState(1024);
+  const [height, setHeight] = useState(1024);
 
   const handleGenerate = async () => {
     try {
       setIsGenerating(true);
       setImageUrl(null);
 
-      const response = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, width, height }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to generate image");
+        throw new Error(data.error || 'Failed to generate image');
       }
 
       setImageUrl(data.imageUrl);
     } catch (error) {
-      console.error("Error generating image:", error);
+      console.error('Error generating image:', error);
     } finally {
       setIsGenerating(false);
     }
@@ -39,7 +42,9 @@ export default function Home() {
     <main className="flex-1 w-full max-w-3xl mx-auto flex flex-col items-center justify-center py-16 px-4">
       <div className="flex items-center gap-3 mb-8">
         <Sparkles className="h-8 w-8 text-orange-400" />
-        <h1 className="text-4xl font-serif text-[#2d2d2d]">AI Image Generator</h1>
+        <h1 className="text-4xl font-serif text-[#2d2d2d]">
+          AI Image Generator
+        </h1>
       </div>
 
       <PromptInput
@@ -54,7 +59,22 @@ export default function Home() {
         <span>Generate images using AI</span>
       </div>
 
-      <ImageDisplay imageUrl={imageUrl} isLoading={isGenerating} />
+      <div className="w-full mt-8">
+        <DimensionControls
+          width={width}
+          height={height}
+          setWidth={setWidth}
+          setHeight={setHeight}
+          disabled={isGenerating}
+        />
+      </div>
+
+      <ImageDisplay
+        imageUrl={imageUrl}
+        isLoading={isGenerating}
+        width={width}
+        height={height}
+      />
     </main>
   );
 }
